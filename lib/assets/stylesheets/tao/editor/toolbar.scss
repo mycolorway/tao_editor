@@ -1,0 +1,25 @@
+@import 'tao/ui/globals';
+
+$editor-toolbar-item-width: 2rem;
+$editor-toolbar-item-height: 2rem;
+
+.tao-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid $light-border-color;
+
+  .tao-editor-toolbar-item {
+    display: flex;
+    width: $editor-toolbar-item-width;
+    height: $editor-toolbar-item-height;
+    align-items: center;
+    justify-content: center;
+    fill: $lightest-grey-color;
+    cursor: pointer;
+
+    &:hover,
+    &[active] {
+      fill: $grey-color;
+    }
+  }
+}

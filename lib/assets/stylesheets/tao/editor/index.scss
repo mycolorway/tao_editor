@@ -1,0 +1,24 @@
+//= require tao/ui
+//= require tao/form
+
+@import 'tao/ui/globals';
+
+.tao-editor {
+  display: block;
+  border: 1px solid $border-color;
+
+  &[toolbar-floating] > .tao-editor-toolbar {
+    width: 100%;
+    position: absolute;
+  }
+
+  &.tooblar-placeholder {
+    display: none;
+  }
+
+  & > .tao-editor-body {
+    outline: none;
+    min-height: 300px;
+    padding: 0.75rem 1rem;
+  }
+}
