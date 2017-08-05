@@ -1,13 +1,13 @@
 { EditorState } = ProseMirrorState
 { EditorView } = ProseMirrorView
 { DOMParser, Node } = ProseMirrorModel
-{ schema: basicSchema } = ProseMirrorSchemaBasic
 { baseKeymap } = ProseMirrorCommands
 { keymap } = ProseMirrorKeymap
 
-class Tao.Editor extends Tao.Component
+class Tao.Editor.Element extends Tao.Component
 
   @extend Tao.Editor.ExtensionBase
+  @include Tao.Editor.AlignmentExtension
   @include Tao.Editor.HistoryExtension
   @include Tao.Editor.ListExtension
   @include Tao.Editor.ToolbarExtension
@@ -29,10 +29,10 @@ class Tao.Editor extends Tao.Component
     @body = $ @view.dom
 
   _disconnected: ->
-    @view.destory()
+    @view.destroy()
 
   _buildSchema: ->
-    @schema = basicSchema
+    @schema = Tao.Editor.schema
     @constructor._schemaCallbacks.forEach (callback) =>
       @schema = callback.call(@, @schema)
     @schema
@@ -40,13 +40,13 @@ class Tao.Editor extends Tao.Component
   _buildPlugins: ->
     @plugins = [keymap(@keymaps)]
     @constructor._pluginCallbacks.forEach (callback) =>
-      @plugins.push callback.call(@)
+      @plugins = _.concat @plugins, callback.call(@)
     @plugins
 
   _buildKeymaps: ->
     @keymaps = _.extend {}, baseKeymap
     @constructor._keymapCallbacks.forEach (callback) =>
-      _.extend @keymaps, callback.call(@)
+      _.extend @keymaps, callback.call(@, @keymaps)
     @keymaps
 
   _buildState: ->
@@ -76,4 +76,4 @@ class Tao.Editor extends Tao.Component
     console.log @state.doc.toJSON()
     @field.val @state.doc.toJSON()
 
-Tao.Component.register Tao.Editor
+Tao.Component.register Tao.Editor.Element

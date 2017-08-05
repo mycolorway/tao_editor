@@ -2,10 +2,8 @@ class Tao.Editor.Toolbar.Element extends TaoComponent
 
   @tag 'tao-editor-toolbar'
 
-  @attribute 'floating', type: 'boolean'
-
   _connected: ->
-    @items = @jq.find('.tao-editor-toolbar-item').get()
+    @items = @findComponent '.tao-editor-toolbar-item'
 
   _disconnected: ->
     @off()
@@ -13,7 +11,7 @@ class Tao.Editor.Toolbar.Element extends TaoComponent
   setEditorView: (editorView) ->
     @editorView = editorView
     @items.forEach (item) =>
-      @constructor.componentReady item, ->
+      Tao.helpers.componentReady item, ->
         item.setEditorView editorView
 
   # called by editor view

@@ -14,6 +14,7 @@ class Tao.Editor.Toolbar.CommandItem extends Tao.Editor.Toolbar.BaseItem
 
   _onClick: ->
     @command?(@editorView.state, @editorView.dispatch, @editorView)
+    @editorView.focus()
 
   _updateDisabled: ->
     if _.isFunction @command

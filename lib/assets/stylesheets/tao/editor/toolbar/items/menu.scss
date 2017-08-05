@@ -1,0 +1,71 @@
+@import 'tao/editor/globals';
+
+.tao-editor-toolbar-menu-item {
+
+  & > .item-link {
+    box-shadow: initial;
+    transition: box-shadow 200ms;
+
+    &.tao-popover-active {
+      fill: $grey-color !important;
+      box-shadow: 0 0 4px rgba(0,0,0,0.2);
+      position: relative;
+    }
+  }
+
+  .menu-popover .tao-popover-content {
+    border: none;
+    box-shadow: 0 0 4px rgba(0,0,0,0.2);
+    padding: 0;
+
+    &:before {
+      content: '';
+      display: block;
+      width: $editor-toolbar-item-width;
+      height: 0.25rem;
+      background: $white-color;
+      position: absolute;
+      top: -3px;
+      left: 0;
+    }
+
+    & > .tao-editor-toolbar-item {
+      display: block;
+      border-bottom: 1px solid $light-border-color;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .item-link {
+        display: block;
+        white-space: nowrap;
+        font-size: 0.875rem;
+        padding: 0.4rem 1rem;
+        color: $lighter-grey-color;
+
+        &:hover {
+          color: $grey-color;
+        }
+      }
+
+      &[disabled] > .item-link {
+        color: $lightest-grey-color;
+        cursor: not-allowed;
+      }
+
+      &[active] > .item-link {
+        color: $grey-color;
+        background: $grey-bg-color;
+        cursor: default;
+      }
+    }
+  }
+
+  &[active] .menu-popover .tao-popover-content {
+    &:before {
+      background: $grey-bg-color;
+    }
+  }
+
+}

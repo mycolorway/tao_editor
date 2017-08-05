@@ -33,7 +33,8 @@ module TaoEditor
       def default_options
         {
           class: 'tao-editor',
-          toolbar: true
+          toolbar: true,
+          toolbar_floatable: true
         }
       end
 

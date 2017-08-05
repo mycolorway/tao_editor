@@ -1,0 +1,11 @@
+<%= content_tag component.tag_name, component.html_options do %>
+  <%= component.render_item_link %>
+  <%= component.render_tooltip %>
+
+  <%= tao_popover target_selector: '.item-link', target_traversal: 'siblings',
+    class: 'menu-popover', with_arrow: false, direction: 'bottom-right', offset: -8 do %>
+    <% component.items.each do |item| %>
+      <%= component.render_item item.clone %>
+    <% end %>
+  <% end %>
+<% end %>

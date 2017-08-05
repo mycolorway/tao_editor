@@ -12828,10 +12828,11 @@ keyName.shift = shift
 window.ProseMirrorView = require('prosemirror-view');
 window.ProseMirrorState = require('prosemirror-state');
 window.ProseMirrorModel = require('prosemirror-model');
+window.ProseMirrorTransform = require('prosemirror-transform');
 window.ProseMirrorKeymap = require('prosemirror-keymap');
 window.ProseMirrorHistory = require('prosemirror-history');
 window.ProseMirrorCommands = require('prosemirror-commands');
 window.ProseMirrorSchemaBasic = require('prosemirror-schema-basic');
 window.ProseMirrorSchemaList = require('prosemirror-schema-list');
 
-},{"prosemirror-commands":2,"prosemirror-history":3,"prosemirror-keymap":4,"prosemirror-model":10,"prosemirror-schema-basic":17,"prosemirror-schema-list":18,"prosemirror-state":19,"prosemirror-view":41}]},{},[48]);
+},{"prosemirror-commands":2,"prosemirror-history":3,"prosemirror-keymap":4,"prosemirror-model":10,"prosemirror-schema-basic":17,"prosemirror-schema-list":18,"prosemirror-state":19,"prosemirror-transform":24,"prosemirror-view":41}]},{},[48]);

@@ -7,8 +7,8 @@ Tao.Editor.ToolbarExtension = ->
       view: (editorView) =>
         @_initToolbar editorView
 
-        update: @_updateToolbar
-        destroy: @_destroyToolbar
+        update: @_updateToolbar.bind(@)
+        destroy: @_destroyToolbar.bind(@)
 
   @attribute 'toolbarFloatable', type: 'boolean'
 
@@ -24,11 +24,12 @@ Tao.Editor.ToolbarExtension = ->
 
     if @toolbarFloatable
       @_scrollContainer = @jq.closest(@scrollContainerSelector) if @scrollContainerSelector
-      @_toolbarHeight = $(toolbar).outerHeight()
+      @_toolbarHeight = $(@toolbar).outerHeight()
+      @_toolbarWidth = $(@toolbar).outerWidth()
       @_generatePlaceholder()
-      @_updateToolbarFloating()
+      @_updateToolbarFloating editorView
 
-      $(window).on "scroll.tao-editor-toolbar-#{@taoId}", _.throttled (e) =>
+      $(window).on "scroll.tao-editor-toolbar-#{@taoId}", _.throttle (e) =>
         @_updateToolbarFloating()
       , 100
 
@@ -48,22 +49,32 @@ Tao.Editor.ToolbarExtension = ->
     if @toolbarFloatable
       @_scrollContainer = null
       @_toolbarHeight = null
+      @_toolbarWidth = null
       @_toolbarPlaceholder.remove()
       $(window).off(".tao-editor-toolbar-#{@taoId}")
 
-  _updateToolbarFloating: ->
-    bodyTop = @body.get(0).getBoundingClientRect().top
-    if @_scrollContainer && @_scrollContainer.length > 0
+  _updateToolbarFloating: (editorView = @view) ->
+    editorBody = $ editorView.dom
+    bodyTop = editorBody.get(0).getBoundingClientRect().top
+    if @_scrollContainer?.length > 0
       bodyTop -= @_scrollContainer.get(0).getBoundingClientRect().top
 
     @toolbarFloating = bodyTop - @_toolbarHeight < 0 &&
-      bodyTop + @body.outerHeight() - @_toolbarHeight - 60 > 0
+      bodyTop + editorBody.outerHeight() - @_toolbarHeight - 60 > 0
 
   _toolbarFloatingChanged: ->
     if @toolbarFloating
       @_toolbarPlaceholder.show()
-      @toolbar.css
+
+      toolbarLeft = if @_scrollContainer?.length > 0
+        @_toolbarPlaceholder.position().left
+      else
+        @_toolbarPlaceholder.offset().left
+
+      @toolbar.jq.css
+        width: @_toolbarWidth
         top: @toolbarFloatOffset
-        left: @_toolbarPlaceholder.position().left
+        left: toolbarLeft
     else
       @_toolbarPlaceholder.hide()
+      @toolbar.jq.css width: ''

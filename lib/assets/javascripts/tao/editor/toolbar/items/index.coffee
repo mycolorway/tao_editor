@@ -1,3 +1,2 @@
 #= require ./base
-#= require ./mark
-#= require ./block
+#= require_tree ./

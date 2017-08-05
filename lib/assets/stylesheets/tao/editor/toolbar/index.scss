@@ -1,0 +1,45 @@
+//= require ./items
+
+@import 'tao/editor/globals';
+
+.tao-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  border-bottom: 1px solid $light-border-color;
+  background: $white-color;
+  padding: 0 0.5rem;
+
+  & > .tao-editor-toolbar-item {
+    display: block;
+
+    & > .item-link {
+      display: flex;
+      width: $editor-toolbar-item-width;
+      height: $editor-toolbar-item-height;
+      align-items: center;
+      justify-content: center;
+      fill: $lighter-grey-color;
+
+      &:hover {
+        fill: $grey-color;
+      }
+    }
+
+    &[disabled] > .item-link {
+      fill: $lightest-grey-color;
+      cursor: not-allowed;
+    }
+
+    &[active] > .item-link {
+      fill: $grey-color;
+      background: $grey-bg-color;
+    }
+  }
+
+  & > .item-separator {
+    height: 1rem;
+    border-left: 1px solid $light-border-color;
+    margin: 0 0.5rem;
+  }
+}

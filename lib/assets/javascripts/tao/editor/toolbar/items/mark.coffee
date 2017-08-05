@@ -1,3 +1,5 @@
+#= require ./command
+
 class Tao.Editor.Toolbar.MarkItem extends Tao.Editor.Toolbar.CommandItem
 
   @tag 'tao-editor-toolbar-mark-item'
@@ -8,7 +10,7 @@ class Tao.Editor.Toolbar.MarkItem extends Tao.Editor.Toolbar.CommandItem
 
   setEditorView: (editorView) ->
     super
-    @markType = editorView.state.marks[@markName]
+    @markType = editorView.state.schema.marks[@markName]
     @command = Tao.Editor.Commands.toggleMark @markType, @markAttrs
 
   reset: ->
@@ -17,7 +19,7 @@ class Tao.Editor.Toolbar.MarkItem extends Tao.Editor.Toolbar.CommandItem
 
   _updateActive: ->
     {from, $from, to, empty} = @editorView.state.selection
-    if empty
+    @active = if empty
       @markType.isInSet(@editorView.state.storedMarks || $from.marks())
     else
       @editorView.state.doc.rangeHasMark(from, to, @markType)

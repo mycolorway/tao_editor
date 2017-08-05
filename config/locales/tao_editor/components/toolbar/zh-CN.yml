@@ -1,0 +1,16 @@
+zh-CN:
+  tao_editor:
+    components:
+      toolbar:
+        items:
+          bold: 加粗
+          italic: 斜体
+          underline: 下划线
+          ol: 有序列表
+          ul: 无序列表
+          heading: 标题
+          h1: 标题 1
+          h2: 标题 2
+          h3: 标题 3
+          h4: 标题 4
+          text: 正文

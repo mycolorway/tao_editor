@@ -5,7 +5,7 @@ class Tao.Editor.Toolbar.BaseItem extends TaoComponent
   @attribute 'disabled', type: 'boolean', observe: true
 
   _connected: ->
-    @on 'click', (e) => @_onClick()
+    @on 'click', '> .item-link', (e) => @_onClick()
 
   _disconnected: ->
     @off()
@@ -25,6 +25,12 @@ class Tao.Editor.Toolbar.BaseItem extends TaoComponent
 
   _updateDisabled: (prevState) ->
     # to be implemented
+
+  _activeChanged: ->
+    @namespacedTrigger 'activeChanged'
+
+  _disabledChanged: ->
+    @namespacedTrigger 'disabledChanged'
 
   reset: ->
     @active = false

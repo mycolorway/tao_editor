@@ -4,6 +4,7 @@
 #= require prosemirror
 #= require_self
 #= require ./helpers
+#= require ./schema
 #= require ./commands
 #= require ./extensions
 #= require ./element

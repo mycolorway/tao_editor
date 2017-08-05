@@ -7,7 +7,11 @@ Tao.Editor.Helpers =
       false
 
   chainCommands: (commands...) ->
-    ProseMirrorCommands.chainCommands _.compact(commands)...
+    commands = _.compact(commands)
+    if commands.length > 1
+      ProseMirrorCommands.chainCommands commands...
+    else
+      commands[0]
 
   # isInViewport: (el) ->
   #   $el = $ el
