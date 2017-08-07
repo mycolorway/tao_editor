@@ -19,21 +19,27 @@
       height: $editor-toolbar-item-height;
       align-items: center;
       justify-content: center;
-      fill: $lighter-grey-color;
+      fill: $lightest-grey-color;
 
       &:hover {
-        fill: $grey-color;
+        fill: $light-grey-color;
+        background: $grey-bg-color;
+      }
+
+      .icon {
+        width: 1.5rem;
+        height: 1.5rem;
       }
     }
 
     &[disabled] > .item-link {
       fill: $lightest-grey-color;
       cursor: not-allowed;
+      background: none;
     }
 
     &[active] > .item-link {
-      fill: $grey-color;
-      background: $grey-bg-color;
+      fill: $black-color;
     }
   }
 

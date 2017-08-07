@@ -740,7 +740,7 @@ if (mac) {
 
 exports.baseKeymap = baseKeymap
 
-},{"prosemirror-model":10,"prosemirror-state":19,"prosemirror-transform":24}],3:[function(require,module,exports){
+},{"prosemirror-model":10,"prosemirror-state":20,"prosemirror-transform":25}],3:[function(require,module,exports){
 var RopeSequence = require("rope-sequence")
 var ref = require("prosemirror-transform");
 var Mapping = ref.Mapping;
@@ -1162,7 +1162,7 @@ function redoDepth(state) {
 }
 exports.redoDepth = redoDepth
 
-},{"prosemirror-state":19,"prosemirror-transform":24,"rope-sequence":46}],4:[function(require,module,exports){
+},{"prosemirror-state":20,"prosemirror-transform":25,"rope-sequence":47}],4:[function(require,module,exports){
 var keyName = require("w3c-keyname")
 var ref = require("prosemirror-state");
 var Plugin = ref.Plugin;
@@ -1261,7 +1261,7 @@ function keydownHandler(bindings) {
 }
 exports.keydownHandler = keydownHandler
 
-},{"prosemirror-state":19,"w3c-keyname":47}],5:[function(require,module,exports){
+},{"prosemirror-state":20,"w3c-keyname":48}],5:[function(require,module,exports){
 function compareDeep(a, b) {
   if (a === b) { return true }
   if (!(a && typeof a == "object") ||
@@ -5048,7 +5048,440 @@ function sinkListItem(itemType) {
 }
 exports.sinkListItem = sinkListItem
 
-},{"prosemirror-model":10,"prosemirror-transform":24}],19:[function(require,module,exports){
+},{"prosemirror-model":10,"prosemirror-transform":25}],19:[function(require,module,exports){
+var ref = require("prosemirror-model");
+var Fragment = ref.Fragment;
+var Slice = ref.Slice;
+var ref$1 = require("prosemirror-transform");
+var Step = ref$1.Step;
+var StepResult = ref$1.StepResult;
+var StepMap = ref$1.StepMap;
+var ReplaceStep = ref$1.ReplaceStep;
+var ref$2 = require("prosemirror-state");
+var Selection = ref$2.Selection;
+
+// :: NodeSpec
+// A table node spec. Has one attribute, **`columns`**, which holds
+// a number indicating the amount of columns in the table.
+var table = {
+  attrs: {columns: {default: 1}},
+  parseDOM: [{tag: "table", getAttrs: function getAttrs(dom) {
+    var row = dom.querySelector("tr")
+    if (!row || !row.children.length) { return false }
+    // FIXME using the child count as column width is problematic
+    // when parsing document fragments
+    return {columns: row.children.length}
+  }}],
+  toDOM: function toDOM() { return ["table", ["tbody", 0]] }
+}
+exports.table = table
+
+// :: NodeSpec
+// A table row node spec. Has one attribute, **`columns`**, which
+// holds a number indicating the amount of columns in the table.
+var tableRow = {
+  attrs: {columns: {default: 1}},
+  parseDOM: [{tag: "tr", getAttrs: function (dom) { return dom.children.length ? {columns: dom.children.length} : false; }}],
+  toDOM: function toDOM() { return ["tr", 0] },
+  tableRow: true
+}
+exports.tableRow = tableRow
+
+// :: NodeSpec
+// A table cell node spec.
+var tableCell = {
+  isolating: true,
+  parseDOM: [{tag: "td"}],
+  toDOM: function toDOM() { return ["td", 0] }
+}
+exports.tableCell = tableCell
+
+function add(obj, props) {
+  var copy = {}
+  for (var prop in obj) { copy[prop] = obj[prop] }
+  for (var prop$1 in props) { copy[prop$1] = props[prop$1] }
+  return copy
+}
+
+// :: (OrderedMap, string, ?string) → OrderedMap
+// Convenience function for adding table-related node types to a map
+// describing the nodes in a schema. Adds `Table` as `"table"`,
+// `TableRow` as `"table_row"`, and `TableCell` as `"table_cell"`.
+// `cellContent` should be a content expression describing what may
+// occur inside cells.
+function addTableNodes(nodes, cellContent, tableGroup) {
+  return nodes.append({
+    table: add(table, {content: "table_row[columns=.columns]+", group: tableGroup}),
+    table_row: add(tableRow, {content: "table_cell{.columns}"}),
+    table_cell: add(tableCell, {content: cellContent})
+  })
+}
+exports.addTableNodes = addTableNodes
+
+// :: (NodeType, number, number, ?Object) → Node
+// Create a table node with the given number of rows and columns.
+function createTable(nodeType, rows, columns, attrs) {
+  attrs = setColumns(attrs, columns)
+  var rowType = nodeType.contentExpr.elements[0].nodeTypes[0]
+  var cellType = rowType.contentExpr.elements[0].nodeTypes[0]
+  var cell = cellType.createAndFill(), cells = []
+  for (var i = 0; i < columns; i++) { cells.push(cell) }
+  var row = rowType.create({columns: columns}, Fragment.from(cells)), rowNodes = []
+  for (var i$1 = 0; i$1 < rows; i$1++) { rowNodes.push(row) }
+  return nodeType.create(attrs, Fragment.from(rowNodes))
+}
+exports.createTable = createTable
+
+// Steps to add and remove a column
+
+function setColumns(attrs, columns) {
+  var result = Object.create(null)
+  if (attrs) { for (var prop in attrs) { result[prop] = attrs[prop] } }
+  result.columns = columns
+  return result
+}
+
+function adjustColumns(attrs, diff) {
+  return setColumns(attrs, attrs.columns + diff)
+}
+
+// ::- A `Step` subclass for adding a column to a table in a single
+// atomic step.
+var AddColumnStep = (function (Step) {
+  function AddColumnStep(positions, cells) {
+    Step.call(this)
+    this.positions = positions
+    this.cells = cells
+  }
+
+  if ( Step ) AddColumnStep.__proto__ = Step;
+  AddColumnStep.prototype = Object.create( Step && Step.prototype );
+  AddColumnStep.prototype.constructor = AddColumnStep;
+
+  // :: (Node, number, number, NodeType, ?Object) → AddColumnStep
+  // Create a step that inserts a column into the table after
+  // `tablePos`, at the index given by `columnIndex`, using cells with
+  // the given type and attributes.
+  AddColumnStep.create = function create (doc, tablePos, columnIndex, cellType, cellAttrs) {
+    var cell = cellType.createAndFill(cellAttrs)
+    var positions = [], cells = []
+    var table = doc.nodeAt(tablePos)
+    table.forEach(function (row, rowOff) {
+      var cellPos = tablePos + 2 + rowOff
+      for (var i = 0; i < columnIndex; i++) { cellPos += row.child(i).nodeSize }
+      positions.push(cellPos)
+      cells.push(cell)
+    })
+    return new AddColumnStep(positions, cells)
+  };
+
+  AddColumnStep.prototype.apply = function apply (doc) {
+    var this$1 = this;
+
+    var index = null, table = null, tablePos = null
+    for (var i = 0; i < this.positions.length; i++) {
+      var $pos = doc.resolve(this$1.positions[i])
+      if ($pos.depth < 2 || $pos.index(-1) != i)
+        { return StepResult.fail("Invalid cell insert position") }
+      if (table == null) {
+        table = $pos.node(-1)
+        if (table.childCount != this$1.positions.length)
+          { return StepResult.fail("Mismatch in number of rows") }
+        tablePos = $pos.before(-1)
+        index = $pos.index()
+      } else if ($pos.before(-1) != tablePos || $pos.index() != index) {
+        return StepResult.fail("Column insert positions not consistent")
+      }
+    }
+
+    var updatedRows = []
+    for (var i$1 = 0; i$1 < table.childCount; i$1++) {
+      var row = table.child(i$1), rowCells = index ? [] : [this$1.cells[i$1]]
+      for (var j = 0; j < row.childCount; j++) {
+        rowCells.push(row.child(j))
+        if (j + 1 == index) { rowCells.push(this$1.cells[i$1]) }
+      }
+      updatedRows.push(row.type.create(adjustColumns(row.attrs, 1), Fragment.from(rowCells)))
+    }
+    var updatedTable = table.type.create(adjustColumns(table.attrs, 1),  Fragment.from(updatedRows))
+    return StepResult.fromReplace(doc, tablePos, tablePos + table.nodeSize,
+                                  new Slice(Fragment.from(updatedTable), 0, 0))
+  };
+
+  AddColumnStep.prototype.getMap = function getMap () {
+    var this$1 = this;
+
+    var ranges = []
+    for (var i = 0; i < this.positions.length; i++)
+      { ranges.push(this$1.positions[i], 0, this$1.cells[i].nodeSize) }
+    return new StepMap(ranges)
+  };
+
+  AddColumnStep.prototype.invert = function invert (doc) {
+    var this$1 = this;
+
+    var $first = doc.resolve(this.positions[0])
+    var table = $first.node(-1)
+    var from = [], to = [], dPos = 0
+    for (var i = 0; i < table.childCount; i++) {
+      var pos = this$1.positions[i] + dPos, size = this$1.cells[i].nodeSize
+      from.push(pos)
+      to.push(pos + size)
+      dPos += size
+    }
+    return new RemoveColumnStep(from, to)
+  };
+
+  AddColumnStep.prototype.map = function map (mapping) {
+    return new AddColumnStep(this.positions.map(function (p) { return mapping.map(p); }), this.cells)
+  };
+
+  AddColumnStep.prototype.toJSON = function toJSON () {
+    return {stepType: this.jsonID,
+            positions: this.positions,
+            cells: this.cells.map(function (c) { return c.toJSON(); })}
+  };
+
+  AddColumnStep.fromJSON = function fromJSON (schema, json) {
+    return new AddColumnStep(json.positions, json.cells.map(schema.nodeFromJSON))
+  };
+
+  return AddColumnStep;
+}(Step));
+exports.AddColumnStep = AddColumnStep
+
+Step.jsonID("addTableColumn", AddColumnStep)
+
+// ::- A subclass of `Step` that removes a column from a table.
+var RemoveColumnStep = (function (Step) {
+  function RemoveColumnStep(from, to) {
+    Step.call(this)
+    this.from = from
+    this.to = to
+  }
+
+  if ( Step ) RemoveColumnStep.__proto__ = Step;
+  RemoveColumnStep.prototype = Object.create( Step && Step.prototype );
+  RemoveColumnStep.prototype.constructor = RemoveColumnStep;
+
+  // :: (Node, number, number) → RemoveColumnStep
+  // Create a step that deletes the column at `columnIndex` in the
+  // table after `tablePos`.
+  RemoveColumnStep.create = function create (doc, tablePos, columnIndex) {
+    var from = [], to = []
+    var table = doc.nodeAt(tablePos)
+    table.forEach(function (row, rowOff) {
+      var cellPos = tablePos + 2 + rowOff
+      for (var i = 0; i < columnIndex; i++) { cellPos += row.child(i).nodeSize }
+      from.push(cellPos)
+      to.push(cellPos + row.child(columnIndex).nodeSize)
+    })
+    return new RemoveColumnStep(from, to)
+  };
+
+  RemoveColumnStep.prototype.apply = function apply (doc) {
+    var this$1 = this;
+
+    var index = null, table = null, tablePos = null
+    for (var i = 0; i < this.from.length; i++) {
+      var $from = doc.resolve(this$1.from[i]), after = $from.nodeAfter
+      if ($from.depth < 2 || $from.index(-1) != i || !after || this$1.from[i] + after.nodeSize != this$1.to[i])
+        { return StepResult.fail("Invalid cell delete positions") }
+      if (table == null) {
+        table = $from.node(-1)
+        if (table.childCount != this$1.from.length)
+          { return StepResult.fail("Mismatch in number of rows") }
+        tablePos = $from.before(-1)
+        index = $from.index()
+      } else if ($from.before(-1) != tablePos || $from.index() != index) {
+        return StepResult.fail("Column delete positions not consistent")
+      }
+    }
+
+    var updatedRows = []
+    for (var i$1 = 0; i$1 < table.childCount; i$1++) {
+      var row = table.child(i$1), rowCells = []
+      for (var j = 0; j < row.childCount; j++)
+        { if (j != index) { rowCells.push(row.child(j)) } }
+      updatedRows.push(row.type.create(adjustColumns(row.attrs, -1), Fragment.from(rowCells)))
+    }
+    var updatedTable = table.type.create(adjustColumns(table.attrs, -1),  Fragment.from(updatedRows))
+    return StepResult.fromReplace(doc, tablePos, tablePos + table.nodeSize,
+                                  new Slice(Fragment.from(updatedTable), 0, 0))
+  };
+
+  RemoveColumnStep.prototype.getMap = function getMap () {
+    var this$1 = this;
+
+    var ranges = []
+    for (var i = 0; i < this.from.length; i++)
+      { ranges.push(this$1.from[i], this$1.to[i] - this$1.from[i], 0) }
+    return new StepMap(ranges)
+  };
+
+  RemoveColumnStep.prototype.invert = function invert (doc) {
+    var this$1 = this;
+
+    var $first = doc.resolve(this.from[0])
+    var table = $first.node(-1), index = $first.index()
+    var positions = [], cells = [], dPos = 0
+    for (var i = 0; i < table.childCount; i++) {
+      positions.push(this$1.from[i] - dPos)
+      var cell = table.child(i).child(index)
+      dPos += cell.nodeSize
+      cells.push(cell)
+    }
+    return new AddColumnStep(positions, cells)
+  };
+
+  RemoveColumnStep.prototype.map = function map (mapping) {
+    var this$1 = this;
+
+    var from = [], to = []
+    for (var i = 0; i < this.from.length; i++) {
+      var start = mapping.map(this$1.from[i], 1), end = mapping.map(this$1.to[i], -1)
+      if (end <= start) { return null }
+      from.push(start)
+      to.push(end)
+    }
+    return new RemoveColumnStep(from, to)
+  };
+
+  RemoveColumnStep.fromJSON = function fromJSON (_schema, json) {
+    return new RemoveColumnStep(json.from, json.to)
+  };
+
+  return RemoveColumnStep;
+}(Step));
+exports.RemoveColumnStep = RemoveColumnStep
+
+Step.jsonID("removeTableColumn", RemoveColumnStep)
+
+// Table-related command functions
+
+function findRow($pos, pred) {
+  for (var d = $pos.depth; d > 0; d--)
+    { if ($pos.node(d).type.spec.tableRow && (!pred || pred(d))) { return d } }
+  return -1
+}
+
+// :: (EditorState, dispatch: ?(tr: Transaction)) → bool
+// Command function that adds a column before the column with the
+// selection.
+function addColumnBefore(state, dispatch) {
+  var $from = state.selection.$from, cellFrom
+  var rowDepth = findRow($from, function (d) { return cellFrom = d == $from.depth ? $from.nodeBefore : $from.node(d + 1); })
+  if (rowDepth == -1) { return false }
+  if (dispatch)
+    { dispatch(state.tr.step(AddColumnStep.create(state.doc, $from.before(rowDepth - 1), $from.index(rowDepth),
+                                                cellFrom.type, cellFrom.attrs))) }
+  return true
+}
+exports.addColumnBefore = addColumnBefore
+
+// :: (EditorState, dispatch: ?(tr: Transaction)) → bool
+// Command function that adds a column after the column with the
+// selection.
+function addColumnAfter(state, dispatch) {
+  var $from = state.selection.$from, cellFrom
+  var rowDepth = findRow($from, function (d) { return cellFrom = d == $from.depth ? $from.nodeAfter : $from.node(d + 1); })
+  if (rowDepth == -1) { return false }
+  if (dispatch)
+    { dispatch(state.tr.step(AddColumnStep.create(state.doc, $from.before(rowDepth - 1),
+                                                $from.indexAfter(rowDepth) + (rowDepth == $from.depth ? 1 : 0),
+                                                cellFrom.type, cellFrom.attrs))) }
+  return true
+}
+exports.addColumnAfter = addColumnAfter
+
+// :: (EditorState, dispatch: ?(tr: Transaction)) → bool
+// Command function that removes the column with the selection.
+function removeColumn(state, dispatch) {
+  var $from = state.selection.$from
+  var rowDepth = findRow($from, function (d) { return $from.node(d).childCount > 1; })
+  if (rowDepth == -1) { return false }
+  if (dispatch)
+    { dispatch(state.tr.step(RemoveColumnStep.create(state.doc, $from.before(rowDepth - 1), $from.index(rowDepth)))) }
+  return true
+}
+exports.removeColumn = removeColumn
+
+function addRow(state, dispatch, side) {
+  var $from = state.selection.$from
+  var rowDepth = findRow($from)
+  if (rowDepth == -1) { return false }
+  if (dispatch) {
+    var exampleRow = $from.node(rowDepth)
+    var cells = [], pos = side < 0 ? $from.before(rowDepth) : $from.after(rowDepth)
+    exampleRow.forEach(function (cell) { return cells.push(cell.type.createAndFill(cell.attrs)); })
+    var row = exampleRow.copy(Fragment.from(cells))
+    dispatch(state.tr.step(new ReplaceStep(pos, pos, new Slice(Fragment.from(row), 0, 0))))
+  }
+  return true
+}
+
+// :: (EditorState, dispatch: ?(tr: Transaction)) → bool
+// Command function that adds a row after the row with the
+// selection.
+function addRowBefore(state, dispatch) {
+  return addRow(state, dispatch, -1)
+}
+exports.addRowBefore = addRowBefore
+
+// :: (EditorState, dispatch: ?(tr: Transaction)) → bool
+// Command function that adds a row before the row with the
+// selection.
+function addRowAfter(state, dispatch) {
+  return addRow(state, dispatch, 1)
+}
+exports.addRowAfter = addRowAfter
+
+// :: (EditorState, dispatch: ?(tr: Transaction)) → bool
+// Command function that removes the row with the selection.
+function removeRow(state, dispatch) {
+  var $from = state.selection.$from
+  var rowDepth = findRow($from, function (d) { return $from.node(d - 1).childCount > 1; })
+  if (rowDepth == -1) { return false }
+  if (dispatch)
+    { dispatch(state.tr.step(new ReplaceStep($from.before(rowDepth), $from.after(rowDepth), Slice.empty))) }
+  return true
+}
+exports.removeRow = removeRow
+
+function moveCell(state, dir, dispatch) {
+  var ref = state.selection;
+  var $from = ref.$from;
+  var rowDepth = findRow($from)
+  if (rowDepth == -1) { return false }
+  var row = $from.node(rowDepth), newIndex = $from.index(rowDepth) + dir
+  if (newIndex >= 0 && newIndex < row.childCount) {
+    var $cellStart = state.doc.resolve(row.content.offsetAt(newIndex) + $from.start(rowDepth))
+    var sel = Selection.findFrom($cellStart, 1)
+    if (!sel || sel.from >= $cellStart.end()) { return false }
+    if (dispatch) { dispatch(state.tr.setSelection(sel).scrollIntoView()) }
+    return true
+  } else {
+    var rowIndex = $from.index(rowDepth - 1) + dir, table = $from.node(rowDepth - 1)
+    if (rowIndex < 0 || rowIndex >= table.childCount) { return false }
+    var cellStart = dir > 0 ? $from.after(rowDepth) + 2 : $from.before(rowDepth) - 2 - table.child(rowIndex).lastChild.content.size
+    var $cellStart$1 = state.doc.resolve(cellStart), sel$1 = Selection.findFrom($cellStart$1, 1)
+    if (!sel$1 || sel$1.from >= $cellStart$1.end()) { return false }
+    if (dispatch) { dispatch(state.tr.setSelection(sel$1).scrollIntoView()) }
+    return true
+  }
+}
+
+// :: (EditorState, dispatch: ?(tr: Transaction)) → bool
+// Move to the next cell in the current table, if there is one.
+function selectNextCell(state, dispatch) { return moveCell(state, 1, dispatch) }
+exports.selectNextCell = selectNextCell
+
+// :: (EditorState, dispatch: ?(tr: Transaction)) → bool
+// Move to the previous cell in the current table, if there is one.
+function selectPreviousCell(state, dispatch) { return moveCell(state, -1, dispatch) }
+exports.selectPreviousCell = selectPreviousCell
+
+},{"prosemirror-model":10,"prosemirror-state":20,"prosemirror-transform":25}],20:[function(require,module,exports){
 ;var assign;
 ((assign = require("./selection"), exports.Selection = assign.Selection, exports.SelectionRange = assign.SelectionRange, exports.TextSelection = assign.TextSelection, exports.NodeSelection = assign.NodeSelection, exports.AllSelection = assign.AllSelection))
 
@@ -5059,7 +5492,7 @@ exports.EditorState = require("./state").EditorState
 ;var assign$1;
 ((assign$1 = require("./plugin"), exports.Plugin = assign$1.Plugin, exports.PluginKey = assign$1.PluginKey))
 
-},{"./plugin":20,"./selection":21,"./state":22,"./transaction":23}],20:[function(require,module,exports){
+},{"./plugin":21,"./selection":22,"./state":23,"./transaction":24}],21:[function(require,module,exports){
 // PluginSpec:: interface
 //
 // A plugin spec provides a definition for a plugin.
@@ -5188,7 +5621,7 @@ PluginKey.prototype.get = function get (state) { return state.config.pluginsByKe
 PluginKey.prototype.getState = function getState (state) { return state[this.key] };
 exports.PluginKey = PluginKey
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var Slice = ref.Slice;
 var Fragment = ref.Fragment;
@@ -5685,7 +6118,7 @@ function selectionToInsertionEnd(tr, startLen, bias) {
   if (end != null) { tr.setSelection(Selection.near(tr.doc.resolve(end), bias)) }
 }
 
-},{"prosemirror-model":10}],22:[function(require,module,exports){
+},{"prosemirror-model":10}],23:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var Node = ref.Node;
 
@@ -5980,7 +6413,7 @@ exports.EditorState = EditorState
 
 var applyListeners = []
 
-},{"./selection":21,"./transaction":23,"prosemirror-model":10}],23:[function(require,module,exports){
+},{"./selection":22,"./transaction":24,"prosemirror-model":10}],24:[function(require,module,exports){
 var ref = require("prosemirror-transform");
 var Transform = ref.Transform;
 var ref$1 = require("prosemirror-model");
@@ -6195,7 +6628,7 @@ var Transaction = (function (Transform) {
 }(Transform));
 exports.Transaction = Transaction
 
-},{"prosemirror-model":10,"prosemirror-transform":24}],24:[function(require,module,exports){
+},{"prosemirror-model":10,"prosemirror-transform":25}],25:[function(require,module,exports){
 ;var assign;
 ((assign = require("./transform"), exports.Transform = assign.Transform, exports.TransformError = assign.TransformError))
 ;var assign$1;
@@ -6212,7 +6645,7 @@ require("./mark")
 ;var assign$6;
 ((assign$6 = require("./replace"), exports.replaceStep = assign$6.replaceStep))
 
-},{"./map":25,"./mark":26,"./mark_step":27,"./replace":28,"./replace_step":29,"./step":30,"./structure":31,"./transform":32}],25:[function(require,module,exports){
+},{"./map":26,"./mark":27,"./mark_step":28,"./replace":29,"./replace_step":30,"./step":31,"./structure":32,"./transform":33}],26:[function(require,module,exports){
 // Mappable:: interface
 // There are several things that positions can be mapped through.
 // We'll denote those as 'mappable'.
@@ -6494,7 +6927,7 @@ Mapping.prototype._map = function _map (pos, assoc, simple) {
 };
 exports.Mapping = Mapping
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var MarkType = ref.MarkType;
 var Slice = ref.Slice;
@@ -6627,7 +7060,7 @@ Transform.prototype.clearNonMatching = function(pos, match) {
   return this
 }
 
-},{"./mark_step":27,"./replace_step":29,"./transform":32,"prosemirror-model":10}],27:[function(require,module,exports){
+},{"./mark_step":28,"./replace_step":30,"./transform":33,"prosemirror-model":10}],28:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var Fragment = ref.Fragment;
 var Slice = ref.Slice;
@@ -6758,7 +7191,7 @@ exports.RemoveMarkStep = RemoveMarkStep
 
 Step.jsonID("removeMark", RemoveMarkStep)
 
-},{"./step":30,"prosemirror-model":10}],28:[function(require,module,exports){
+},{"./step":31,"prosemirror-model":10}],29:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var Fragment = ref.Fragment;
 var Slice = ref.Slice;
@@ -7255,7 +7688,7 @@ function unneccesaryFallthrough($from, dFrom, dFound, slice, dSlice) {
   return false
 }
 
-},{"./replace_step":29,"./structure":31,"./transform":32,"prosemirror-model":10}],29:[function(require,module,exports){
+},{"./replace_step":30,"./structure":32,"./transform":33,"prosemirror-model":10}],30:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var Slice = ref.Slice;
 
@@ -7428,7 +7861,7 @@ function contentBetween(doc, from, to) {
   return false
 }
 
-},{"./map":25,"./step":30,"prosemirror-model":10}],30:[function(require,module,exports){
+},{"./map":26,"./step":31,"prosemirror-model":10}],31:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var ReplaceError = ref.ReplaceError;
 
@@ -7549,7 +7982,7 @@ StepResult.fromReplace = function fromReplace (doc, from, to, slice) {
 };
 exports.StepResult = StepResult
 
-},{"./map":25,"prosemirror-model":10}],31:[function(require,module,exports){
+},{"./map":26,"prosemirror-model":10}],32:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var Slice = ref.Slice;
 var Fragment = ref.Fragment;
@@ -7835,7 +8268,7 @@ function insertPoint(doc, pos, nodeType, attrs) {
 }
 exports.insertPoint = insertPoint
 
-},{"./replace_step":29,"./transform":32,"prosemirror-model":10}],32:[function(require,module,exports){
+},{"./replace_step":30,"./transform":33,"prosemirror-model":10}],33:[function(require,module,exports){
 var ref = require("./map");
 var Mapping = ref.Mapping;
 
@@ -7915,7 +8348,7 @@ Transform.prototype.addStep = function addStep (step, doc) {
 Object.defineProperties( Transform.prototype, prototypeAccessors$1 );
 exports.Transform = Transform
 
-},{"./map":25}],33:[function(require,module,exports){
+},{"./map":26}],34:[function(require,module,exports){
 var result = module.exports = {}
 
 if (typeof navigator != "undefined") {
@@ -7932,7 +8365,7 @@ if (typeof navigator != "undefined") {
   result.webkit = !ie && 'WebkitAppearance' in document.documentElement.style
 }
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 var ref = require("prosemirror-state");
 var Selection = ref.Selection;
 var NodeSelection = ref.NodeSelection;
@@ -8166,7 +8599,7 @@ function captureKeyDown(view, event) {
 }
 exports.captureKeyDown = captureKeyDown
 
-},{"./browser":33,"./dom":37,"prosemirror-state":19}],35:[function(require,module,exports){
+},{"./browser":34,"./dom":38,"prosemirror-state":20}],36:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var Slice = ref.Slice;
 var Fragment = ref.Fragment;
@@ -8364,7 +8797,7 @@ function closeFragment(frag, n, openEnd) {
   return frag.replaceChild(0, node.copy(fill.append(content)))
 }
 
-},{"prosemirror-model":10}],36:[function(require,module,exports){
+},{"prosemirror-model":10}],37:[function(require,module,exports){
 function compareObjs(a, b) {
   if (a == b) { return true }
   for (var p in a) { if (a[p] !== b[p]) { return false } }
@@ -9038,7 +9471,7 @@ function viewDecorations(view) {
 }
 exports.viewDecorations = viewDecorations
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 var browser = require("./browser")
 
 var domIndex = exports.domIndex = function(node) {
@@ -9105,7 +9538,7 @@ exports.selectionCollapsed = function(domSel) {
   return collapsed
 }
 
-},{"./browser":33}],38:[function(require,module,exports){
+},{"./browser":34}],39:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var Fragment = ref.Fragment;
 var DOMParser = ref.DOMParser;
@@ -9471,7 +9904,7 @@ function findDiff(a, b, pos, preferedStart) {
   return {start: start, endA: endA, endB: endB}
 }
 
-},{"./dom":37,"./selection":43,"./trackmappings":44,"prosemirror-model":10,"prosemirror-state":19,"prosemirror-transform":24}],39:[function(require,module,exports){
+},{"./dom":38,"./selection":44,"./trackmappings":45,"prosemirror-model":10,"prosemirror-state":20,"prosemirror-transform":25}],40:[function(require,module,exports){
 var ref = require("./dom");
 var textRange = ref.textRange;
 var parentNode = ref.parentNode;
@@ -9806,7 +10239,7 @@ function endOfTextblock(view, state, dir) {
 }
 exports.endOfTextblock = endOfTextblock
 
-},{"./dom":37}],40:[function(require,module,exports){
+},{"./dom":38}],41:[function(require,module,exports){
 var browser = require("./browser")
 var ref = require("./domchange");
 var DOMChange = ref.DOMChange;
@@ -9884,7 +10317,7 @@ DOMObserver.prototype.registerMutation = function (mut) {
 };
 exports.DOMObserver = DOMObserver
 
-},{"./browser":33,"./dom":37,"./domchange":38}],41:[function(require,module,exports){
+},{"./browser":34,"./dom":38,"./domchange":39}],42:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var Mark = ref.Mark;
 var ref$1 = require("prosemirror-state");
@@ -10407,7 +10840,7 @@ function getEditable(view) {
 //   state that has the transaction
 //   [applied](#state.EditorState.apply).
 
-},{"./decoration":36,"./domcoords":39,"./input":42,"./selection":43,"./viewdesc":45,"prosemirror-model":10,"prosemirror-state":19}],42:[function(require,module,exports){
+},{"./decoration":37,"./domcoords":40,"./input":43,"./selection":44,"./viewdesc":46,"prosemirror-model":10,"prosemirror-state":20}],43:[function(require,module,exports){
 var ref = require("prosemirror-state");
 var Selection = ref.Selection;
 var NodeSelection = ref.NodeSelection;
@@ -10966,7 +11399,7 @@ handlers.blur = function (view, event) {
 // Make sure all handlers get registered
 for (var prop in editHandlers) { handlers[prop] = editHandlers[prop] }
 
-},{"./browser":33,"./capturekeys":34,"./clipboard":35,"./domchange":38,"./domobserver":40,"./selection":43,"prosemirror-state":19}],43:[function(require,module,exports){
+},{"./browser":34,"./capturekeys":35,"./clipboard":36,"./domchange":39,"./domobserver":41,"./selection":44,"prosemirror-state":20}],44:[function(require,module,exports){
 var ref = require("prosemirror-state");
 var TextSelection = ref.TextSelection;
 var NodeSelection = ref.NodeSelection;
@@ -11259,7 +11692,7 @@ function hasFocusAndSelection(view) {
   return sel.anchorNode && view.dom.contains(sel.anchorNode.nodeType == 3 ? sel.anchorNode.parentNode : sel.anchorNode)
 }
 
-},{"./browser":33,"./dom":37,"prosemirror-state":19}],44:[function(require,module,exports){
+},{"./browser":34,"./dom":38,"prosemirror-state":20}],45:[function(require,module,exports){
 var ref = require("prosemirror-state");
 var EditorState = ref.EditorState;
 var ref$1 = require("prosemirror-transform");
@@ -11310,7 +11743,7 @@ TrackMappings.prototype.getMapping = function (state, appendTo) {
 };
 exports.TrackMappings = TrackMappings
 
-},{"prosemirror-state":19,"prosemirror-transform":24}],45:[function(require,module,exports){
+},{"prosemirror-state":20,"prosemirror-transform":25}],46:[function(require,module,exports){
 var ref = require("prosemirror-model");
 var DOMSerializer = ref.DOMSerializer;
 var Fragment = ref.Fragment;
@@ -12488,7 +12921,7 @@ function iosHacks(dom) {
   }
 }
 
-},{"./browser":33,"./dom":37,"prosemirror-model":10}],46:[function(require,module,exports){
+},{"./browser":34,"./dom":38,"prosemirror-model":10}],47:[function(require,module,exports){
 var GOOD_LEAF_SIZE = 200
 
 // :: class<T> A rope sequence is a persistent sequence data structure
@@ -12701,7 +13134,7 @@ var Append = (function (RopeSequence) {
 
 module.exports = RopeSequence
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 var base = {
   8: "Backspace",
   9: "Tab",
@@ -12824,7 +13257,7 @@ module.exports = keyName
 keyName.base = base
 keyName.shift = shift
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 window.ProseMirrorView = require('prosemirror-view');
 window.ProseMirrorState = require('prosemirror-state');
 window.ProseMirrorModel = require('prosemirror-model');
@@ -12834,5 +13267,6 @@ window.ProseMirrorHistory = require('prosemirror-history');
 window.ProseMirrorCommands = require('prosemirror-commands');
 window.ProseMirrorSchemaBasic = require('prosemirror-schema-basic');
 window.ProseMirrorSchemaList = require('prosemirror-schema-list');
+window.ProseMirrorSchemaTable = require('prosemirror-schema-table');
 
-},{"prosemirror-commands":2,"prosemirror-history":3,"prosemirror-keymap":4,"prosemirror-model":10,"prosemirror-schema-basic":17,"prosemirror-schema-list":18,"prosemirror-state":19,"prosemirror-transform":24,"prosemirror-view":41}]},{},[48]);
+},{"prosemirror-commands":2,"prosemirror-history":3,"prosemirror-keymap":4,"prosemirror-model":10,"prosemirror-schema-basic":17,"prosemirror-schema-list":18,"prosemirror-schema-table":19,"prosemirror-state":20,"prosemirror-transform":25,"prosemirror-view":42}]},{},[49]);

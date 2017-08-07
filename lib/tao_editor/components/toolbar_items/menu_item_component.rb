@@ -20,7 +20,7 @@ module TaoEditor
           item_options = {
             title: view.t("tao_editor.components.toolbar.items.#{item_name}"),
             label: true,
-            class: "#{item_name}-item"
+            class: "#{item_name.to_s.dasherize}-item"
           }.merge(item_options)
           view.send("tao_editor_toolbar_#{type.dasherize}_item", item_options)
         end

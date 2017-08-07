@@ -8,6 +8,8 @@
 
     &.tao-popover-active {
       fill: $grey-color !important;
+      background: none !important;
+      cursor: default !important;
       box-shadow: 0 0 4px rgba(0,0,0,0.2);
       position: relative;
     }
@@ -45,27 +47,20 @@
         color: $lighter-grey-color;
 
         &:hover {
-          color: $grey-color;
+          color: $light-grey-color;
+          background: $grey-bg-color;
         }
       }
 
       &[disabled] > .item-link {
         color: $lightest-grey-color;
+        background: none;
         cursor: not-allowed;
       }
 
       &[active] > .item-link {
-        color: $grey-color;
-        background: $grey-bg-color;
-        cursor: default;
+        color: $black-color;
       }
     }
   }
-
-  &[active] .menu-popover .tao-popover-content {
-    &:before {
-      background: $grey-bg-color;
-    }
-  }
-
 }

@@ -7,7 +7,7 @@ module TaoEditor
 
         def initialize view, options = {}
           super
-          @icon = @options.delete(:icon)
+          @icon = @options[:icon].presence
           @label = @options.delete(:label)
           @tooltip = @options.delete(:tooltip)
 
@@ -28,7 +28,7 @@ module TaoEditor
 
         def render_item_link
           view.link_to 'javascript:;', class: 'item-link' do
-            view.concat(view.tao_icon :"editor_toolbar_item_#{icon}") if icon.present?
+            view.concat(view.tao_icon icon) if icon.present? && label.blank?
             view.concat(view.content_tag :span, label, class: 'item-name') if label.present?
           end
         end

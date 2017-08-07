@@ -15,12 +15,17 @@ module TaoEditor
             underline: { type: :mark, icon: :underline, mark_name: :u },
             ul: { type: :list, icon: :unorder_list, list_name: :bullet_list },
             ol: { type: :list, icon: :order_list, list_name: :ordered_list },
+            alignment: { type: :menu, icon: :align_left, items: [
+              { type: :align, alignment: :left, name: :align_left, icon: :align_left },
+              { type: :align, alignment: :center, name: :align_center, icon: :align_center },
+              { type: :align, alignment: :right, name: :align_right, icon: :align_right }
+            ]},
             heading: { type: :menu, icon: :heading, items: [
-              { type: :block, block_name: :heading, block_attrs: {level: 1}, name: :h1 },
-              { type: :block, block_name: :heading, block_attrs: {level: 2}, name: :h2 },
-              { type: :block, block_name: :heading, block_attrs: {level: 3}, name: :h3 },
-              { type: :block, block_name: :heading, block_attrs: {level: 4}, name: :h4 },
-              { type: :block, block_name: :paragraph, class: :text, name: :text }
+              { type: :block, block_name: :heading, block_attrs: {level: 1}, name: :h1, icon: :heading_1 },
+              { type: :block, block_name: :heading, block_attrs: {level: 2}, name: :h2, icon: :heading_2 },
+              { type: :block, block_name: :heading, block_attrs: {level: 3}, name: :h3, icon: :heading_3 },
+              { type: :block, block_name: :heading, block_attrs: {level: 4}, name: :h4, icon: :heading_4 },
+              { type: :block, block_name: :paragraph, name: :text, icon: :heading }
             ]}
           }
         end

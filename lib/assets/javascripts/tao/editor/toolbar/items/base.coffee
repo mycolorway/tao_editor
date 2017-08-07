@@ -4,6 +4,8 @@ class Tao.Editor.Toolbar.BaseItem extends TaoComponent
 
   @attribute 'disabled', type: 'boolean', observe: true
 
+  @attribute 'icon'
+
   _connected: ->
     @on 'click', '> .item-link', (e) => @_onClick()
 
@@ -31,6 +33,10 @@ class Tao.Editor.Toolbar.BaseItem extends TaoComponent
 
   _disabledChanged: ->
     @namespacedTrigger 'disabledChanged'
+
+  _renderIcon: (iconName = @icon) ->
+    @jq.find('> .item-link .icon')
+      .replaceWith Tao.iconTag(_.kebabCase iconName)
 
   reset: ->
     @active = false

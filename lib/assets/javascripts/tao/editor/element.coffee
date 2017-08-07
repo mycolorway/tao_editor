@@ -10,6 +10,7 @@ class Tao.Editor.Element extends Tao.Component
   @include Tao.Editor.AlignmentExtension
   @include Tao.Editor.HistoryExtension
   @include Tao.Editor.ListExtension
+  @include Tao.Editor.TableExtension
   @include Tao.Editor.ToolbarExtension
 
   @tag 'tao-editor'
@@ -73,7 +74,7 @@ class Tao.Editor.Element extends Tao.Component
     @namespacedTrigger 'change'
 
   _syncValue: ->
-    console.log @state.doc.toJSON()
-    @field.val @state.doc.toJSON()
+    # console.log @state.doc.toJSON()
+    @field.val JSON.stringify @state.doc.toJSON()
 
 Tao.Component.register Tao.Editor.Element

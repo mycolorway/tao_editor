@@ -23,6 +23,10 @@ class Tao.Editor.Toolbar.BlockItem extends Tao.Editor.Toolbar.CommandItem
     @active = if node
       node.hasMarkup(@blockType, @blockAttrs)
     else
-      to <= $from.end() && $from.parent.hasMarkup(@blockType, @blockAttrs)
+      attrs = if @blockType == $from.parent.type
+        _.extend {}, $from.parent.attrs, @blockAttrs
+      else
+        @blockAttrs
+      to <= $from.end() && $from.parent.hasMarkup(@blockType, attrs)
 
 TaoComponent.register Tao.Editor.Toolbar.BlockItem

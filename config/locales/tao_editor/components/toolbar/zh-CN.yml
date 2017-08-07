@@ -14,3 +14,7 @@ zh-CN:
           h3: 标题 3
           h4: 标题 4
           text: 正文
+          alignment: 水平对齐
+          align_left: 向左对齐
+          align_center: 居中对齐
+          align_right: 向右对齐

@@ -13,6 +13,9 @@ Tao.Editor.Helpers =
     else
       commands[0]
 
+  orderedMapMerge: (map, key, value) ->
+    map.update key, _.extend(map.get(key), value)
+
   # isInViewport: (el) ->
   #   $el = $ el
   #   $window = $ window

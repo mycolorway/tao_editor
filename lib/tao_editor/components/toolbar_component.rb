@@ -43,7 +43,7 @@ module TaoEditor
       def default_options
         {
           class: 'tao-editor-toolbar',
-          items: ['bold', 'italic', 'underline', '|', 'ul', 'ol', 'heading']
+          items: ['heading', 'bold', 'italic', 'underline', 'alignment', '|', 'ul', 'ol']
         }
       end
 
@@ -53,7 +53,7 @@ module TaoEditor
         {
           title: t("items.#{item_name}"),
           tooltip: true,
-          class: "#{item_name}-item"
+          class: "#{item_name.to_s.dasherize}-item"
         }.merge(item_options)
       end
 

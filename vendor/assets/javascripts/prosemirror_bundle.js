@@ -7,3 +7,4 @@ window.ProseMirrorHistory = require('prosemirror-history');
 window.ProseMirrorCommands = require('prosemirror-commands');
 window.ProseMirrorSchemaBasic = require('prosemirror-schema-basic');
 window.ProseMirrorSchemaList = require('prosemirror-schema-list');
+window.ProseMirrorSchemaTable = require('prosemirror-schema-table');

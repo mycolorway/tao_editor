@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
- PATH=$(npm bin):$PATH browserify vendor/assets/javascripts/prosemirror_bundle.js --outfile vendor/assets/javascripts/prosemirror.js
