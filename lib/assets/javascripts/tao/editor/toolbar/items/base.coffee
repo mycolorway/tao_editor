@@ -35,6 +35,7 @@ class Tao.Editor.Toolbar.BaseItem extends TaoComponent
     @namespacedTrigger 'disabledChanged'
 
   _renderIcon: (iconName = @icon) ->
+    return unless iconName
     @jq.find('> .item-link .icon')
       .replaceWith Tao.iconTag(_.kebabCase iconName)
 

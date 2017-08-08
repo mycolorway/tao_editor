@@ -43,7 +43,7 @@ _.extend Tao.Editor.Commands,
 
       if joinPos > 0
         tr = tr.insert(joinPos, grandParent.content).join joinPos
-        tr = tr.setSelection new TextSelection(tr.doc.resolve joinPos - 1)
+        tr = tr.setSelection TextSelection.create(tr.doc, joinPos - 1)
           .scrollIntoView()
         dispatch? tr
         return true

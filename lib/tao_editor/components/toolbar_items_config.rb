@@ -24,8 +24,17 @@ module TaoEditor
               { type: :block, block_name: :heading, block_attrs: {level: 1}, name: :h1, icon: :heading_1 },
               { type: :block, block_name: :heading, block_attrs: {level: 2}, name: :h2, icon: :heading_2 },
               { type: :block, block_name: :heading, block_attrs: {level: 3}, name: :h3, icon: :heading_3 },
-              { type: :block, block_name: :heading, block_attrs: {level: 4}, name: :h4, icon: :heading_4 },
+              { type: :block, block_name: :heading, block_attrs: {level: 4}, name: :h4, icon: :heading_4 }, '|',
               { type: :block, block_name: :paragraph, name: :text, icon: :heading }
+            ]},
+            table: { type: :table, icon: :table, items: [
+              { type: :command, command_name: :addColumnBefore, name: :add_column_before},
+              { type: :command, command_name: :addColumnAfter, name: :add_column_after},
+              { type: :command, command_name: :deleteColumn, name: :delete_column}, '|',
+              { type: :command, command_name: :addRowBefore, name: :add_row_before},
+              { type: :command, command_name: :addRowAfter, name: :add_row_after},
+              { type: :command, command_name: :deleteRow, name: :delete_row}, '|',
+              { type: :command, command_name: :deleteTable, name: :delete_table}
             ]}
           }
         end

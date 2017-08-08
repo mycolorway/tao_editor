@@ -2,12 +2,12 @@
 //= require tao/form
 //= require_self
 //= require ./toolbar
+//= require ./body
 
 @import 'tao/editor/globals';
 
 .tao-editor {
   display: block;
-  border: 1px solid $border-color;
 
   &[toolbar-floating] > .tao-editor-toolbar {
     width: 100%;
@@ -26,6 +26,5 @@
     outline: none;
     min-height: 300px;
     padding: 0.75rem 1rem;
-    word-wrap: break-word;
   }
 }

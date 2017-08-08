@@ -1,0 +1,42 @@
+@import 'tao/editor/globals';
+
+.tao-editor-toolbar-table-item {
+  .table-creator {
+    padding: 2px;
+
+    table {
+      table-layout: fixed;
+      border-collapse: collapse;
+
+      td {
+        padding: 1px;
+
+        .link-create-table {
+          display: block;
+          width: 0.75rem;
+          height: 0.75rem;
+          background: $grey-bg-color;
+        }
+
+        &.active .link-create-table {
+          background: #dfdfdf;
+        }
+      }
+    }
+  }
+
+  .table-command-items {
+    display: none;
+  }
+
+  &[active] {
+    .table-creator {
+      display: none;
+    }
+
+    .table-command-items {
+      display: block;
+    }
+  }
+
+}

@@ -14,7 +14,6 @@ class Tao.Editor.Toolbar.MenuItem extends Tao.Editor.Toolbar.BaseItem
       @popover.active = false
 
     @on 'tao:activeChanged', '.tao-editor-toolbar-item', _.debounce =>
-      console.log 'test'
       @activeItem = @jq.find('.tao-editor-toolbar-item[active]').get(0)
       @active = !!@activeItem
       null

@@ -15,6 +15,8 @@ class Tao.Editor.Element extends Tao.Component
 
   @tag 'tao-editor'
 
+  @attribute 'placeholder'
+
   @get 'value', ->
     if val = @field.val()
       JSON.parse val
@@ -41,7 +43,8 @@ class Tao.Editor.Element extends Tao.Component
   _buildPlugins: ->
     @plugins = [keymap(@keymaps)]
     @constructor._pluginCallbacks.forEach (callback) =>
-      @plugins = _.concat @plugins, callback.call(@)
+      plugin = callback.call(@)
+      @plugins = _.concat(@plugins, plugin) if plugin
     @plugins
 
   _buildKeymaps: ->

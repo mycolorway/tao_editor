@@ -18,7 +18,10 @@ Tao.Editor.Commands = _.extend {}, ProseMirrorCommands, {
       return false if !$from.node(depth).canReplaceWith(index, index + 1, nodeType)
 
       if dispatch
-        attrs = _.extend {}, target.attrs, attrs if target.type == nodeType
+        attrs = if target.type == nodeType
+          _.extend {}, target.attrs, attrs
+        else if target.isTextblock && nodeType.isTextblock
+          _.extend {align: target.attrs.align}, attrs
         where = $from.before(depth + 1)
         tr = state.tr
           .clearNonMatching(where, nodeType.contentExpr.start(attrs))

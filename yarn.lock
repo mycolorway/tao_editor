@@ -634,7 +634,7 @@ prosemirror-history@^0.22.0:
     prosemirror-transform "^0.22.0"
     rope-sequence "^1.2.0"
 
-prosemirror-keymap@^0.22.1:
+prosemirror-keymap@^0.22.0, prosemirror-keymap@^0.22.1:
   version "0.22.1"
   resolved "https://registry.yarnpkg.com/prosemirror-keymap/-/prosemirror-keymap-0.22.1.tgz#7f1041e0b8b63a1e8bc3b4affcc87dd0e40dc4c0"
   dependencies:
@@ -660,20 +660,22 @@ prosemirror-schema-list@^0.22.0:
     prosemirror-model "^0.22.0"
     prosemirror-transform "^0.22.0"
 
-prosemirror-schema-table@^0.22.0:
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/prosemirror-schema-table/-/prosemirror-schema-table-0.22.0.tgz#4c6e3c64a100a8aad9996f9b1a911703fb3e14a4"
-  dependencies:
-    prosemirror-model "^0.22.0"
-    prosemirror-state "^0.22.0"
-    prosemirror-transform "^0.22.0"
-
 prosemirror-state@^0.22.0:
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/prosemirror-state/-/prosemirror-state-0.22.0.tgz#e4bdd825b95061769102029aee2995010cdd4c5e"
   dependencies:
     prosemirror-model "^0.22.0"
     prosemirror-transform "^0.22.0"
+
+prosemirror-tables@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/prosemirror-tables/-/prosemirror-tables-0.1.1.tgz#187cbe064fd7dab3feb629f365b6526b47e9cc76"
+  dependencies:
+    prosemirror-keymap "^0.22.0"
+    prosemirror-model "^0.22.0"
+    prosemirror-state "^0.22.0"
+    prosemirror-transform "^0.22.0"
+    prosemirror-view "^0.22.0"
 
 prosemirror-transform@^0.22.0:
   version "0.22.2"

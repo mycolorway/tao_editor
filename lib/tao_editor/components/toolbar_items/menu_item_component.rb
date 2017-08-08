@@ -25,6 +25,10 @@ module TaoEditor
           view.send("tao_editor_toolbar_#{type.dasherize}_item", item_options)
         end
 
+        def render_separator
+          view.content_tag 'div', nil, class: 'item-separator'
+        end
+
         def self.component_name
           :editor_toolbar_menu_item
         end

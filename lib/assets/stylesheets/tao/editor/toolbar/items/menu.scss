@@ -31,9 +31,8 @@
       left: 0;
     }
 
-    & > .tao-editor-toolbar-item {
+    .tao-editor-toolbar-item {
       display: block;
-      border-bottom: 1px solid $light-border-color;
 
       &:last-child {
         border-bottom: none;
@@ -61,6 +60,12 @@
       &[active] > .item-link {
         color: $black-color;
       }
+    }
+
+    .item-separator {
+      margin-top: 0.25rem;
+      padding-bottom: 0.25rem;
+      border-top: 1px solid $light-border-color;
     }
   }
 }

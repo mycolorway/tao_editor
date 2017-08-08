@@ -1,0 +1,31 @@
+<%= content_tag component.tag_name, component.html_options do %>
+  <%= component.render_item_link %>
+  <%= component.render_tooltip %>
+
+  <%= tao_popover target_selector: '.item-link', target_traversal: 'siblings',
+    class: 'menu-popover', with_arrow: false, direction: 'bottom-right', offset: -8 do %>
+    <div class="table-creator">
+      <table>
+        <tbody>
+          <% (1..6).each do |row_index| %>
+          <tr>
+            <% (1..6).each do |cell_index| %>
+            <td><%= link_to '', 'javascript:;', class: 'link-create-table' %></td>
+            <% end %>
+          </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-command-items">
+      <% component.items.each do |item| %>
+        <% if item == '|' %>
+          <%= component.render_separator %>
+        <% else %>
+          <%= component.render_item item.clone %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
