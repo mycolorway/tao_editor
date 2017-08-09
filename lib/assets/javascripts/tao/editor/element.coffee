@@ -1,6 +1,6 @@
 { EditorState } = ProseMirrorState
-{ EditorView } = ProseMirrorView
-{ DOMParser, Node } = ProseMirrorModel
+{ EditorView, Decoration, DecorationSet } = ProseMirrorView
+{ DOMParser, Node, DOMSerializer } = ProseMirrorModel
 { baseKeymap } = ProseMirrorCommands
 { keymap } = ProseMirrorKeymap
 
@@ -57,7 +57,8 @@ class Tao.Editor.Element extends Tao.Component
     options = plugins: @plugins
 
     if value = @field.val()
-      option.doc = Node.fromJSON schema, JSON.parse(value)
+      content = $('<div>').html(value).get(0)
+      option.doc = DOMParser.fromSchema(@schema).parse(content)
     else
       options.schema = @schema
 
@@ -66,6 +67,7 @@ class Tao.Editor.Element extends Tao.Component
   _buildView: ->
     new EditorView @,
       state: @state
+      decorations: @_generateDecorations.bind(@)
       dispatchTransaction: @_dispatchTransaction.bind(@)
       attributes:
         class: 'tao-editor-body'
@@ -76,8 +78,18 @@ class Tao.Editor.Element extends Tao.Component
     @_syncValue()
     @namespacedTrigger 'change'
 
+  _generateDecorations: (state) ->
+    doc = state.doc
+    decorations = []
+    if @placeholder && doc.childCount == 1 && doc.firstChild.isTextblock &&
+        doc.firstChild.content.size == 0
+      placeholderNode = $('<span>', placeholder: @placeholder).get(0)
+      decorations.push Decoration.widget(1, placeholderNode)
+    DecorationSet.create(doc, decorations) if decorations.length > 0
+
   _syncValue: ->
-    # console.log @state.doc.toJSON()
-    @field.val JSON.stringify @state.doc.toJSON()
+    serializer = DOMSerializer.fromSchema(@schema)
+    fragment = serializer.serializeFragment(@view.state.doc.content)
+    @field.val $('<div>').append(fragment).html()
 
 Tao.Component.register Tao.Editor.Element

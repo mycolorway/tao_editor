@@ -3,6 +3,7 @@
 .tao-editor .tao-editor-body,
 .tao-editor-style {
   word-wrap: break-word;
+  word-break: break-word;
 
   table {
     width: 100%;
@@ -30,6 +31,16 @@
 }
 
 .tao-editor .tao-editor-body {
+  [placeholder]:before {
+    content: attr(placeholder);
+    color: $lightest-grey-color;
+    cursor: text;
+  }
+
+  &.ProseMirror-focused [placeholder]:before {
+    content: ''
+  }
+
   table {
     td.selectedCell {
       background: $grey-bg-color;

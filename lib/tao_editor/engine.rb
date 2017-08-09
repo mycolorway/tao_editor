@@ -1,7 +1,6 @@
 require 'tao_on_rails'
 require 'tao_ui'
 require 'tao_form'
-# require 'tao_editor/components'
 
 module TaoEditor
   class Engine < Rails::Engine
