@@ -4,7 +4,6 @@
 
   & > .item-link {
     box-shadow: initial;
-    transition: box-shadow 200ms;
 
     &.tao-popover-active {
       fill: $grey-color !important;

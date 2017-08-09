@@ -31,7 +31,7 @@ Tao.Editor.ToolbarExtension = ->
 
       $(window).on "scroll.tao-editor-toolbar-#{@taoId}", _.throttle (e) =>
         @_updateToolbarFloating()
-      , 100
+      , 50
 
   _generatePlaceholder: ->
     @_toolbarPlaceholder = @jq.find('> .toolbar-placeholder')

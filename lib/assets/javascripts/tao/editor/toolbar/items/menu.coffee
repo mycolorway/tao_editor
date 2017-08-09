@@ -11,7 +11,8 @@ class Tao.Editor.Toolbar.MenuItem extends Tao.Editor.Toolbar.BaseItem
 
   _bind: ->
     @on 'click', '.menu-popover .tao-editor-toolbar-item > .item-link', (e) =>
-      @popover.active = false
+      @_hidePopover()
+      null
 
     @on 'tao:activeChanged', '.tao-editor-toolbar-item', _.debounce =>
       @activeItem = @jq.find('.tao-editor-toolbar-item[active]').get(0)
@@ -28,5 +29,9 @@ class Tao.Editor.Toolbar.MenuItem extends Tao.Editor.Toolbar.BaseItem
   _activeChanged: ->
     super
     @_renderIcon @activeItem?.icon
+
+  _hidePopover: ->
+    @popover.jq.hide()
+    @popover.active = false
 
 TaoComponent.register Tao.Editor.Toolbar.MenuItem

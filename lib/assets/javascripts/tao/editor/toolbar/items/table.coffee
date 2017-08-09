@@ -20,8 +20,9 @@ class Tao.Editor.Toolbar.TableItem extends Tao.Editor.Toolbar.MenuItem
       $td = $(e.currentTarget).closest('td')
       [rowIndex, colIndex] = @_getCellPosition $td
       insertTable @editorView.state, @editorView.dispatch, rowIndex + 1, colIndex + 1
-      @popover.active = false
       @editorView.focus()
+      @_resetTableCreator()
+      @_hidePopover()
       null
 
   _getCellPosition: ($td) ->
@@ -34,6 +35,10 @@ class Tao.Editor.Toolbar.TableItem extends Tao.Editor.Toolbar.MenuItem
     $table.find('td').removeClass 'active'
     $table.find('tr').slice(0, rowIndex + 1).each (i, tr) ->
       $(tr).find('td').slice(0, colIndex + 1).addClass 'active'
+
+  _resetTableCreator: ->
+    $table = @jq.find('.table-creator')
+    $table.find('td.active').removeClass 'active'
 
   _updateActive: ->
     @active = !!@_isInTable()
