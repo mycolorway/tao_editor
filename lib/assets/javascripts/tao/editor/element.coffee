@@ -58,7 +58,7 @@ class Tao.Editor.Element extends Tao.Component
 
     if value = @field.val()
       content = $('<div>').html(value).get(0)
-      option.doc = DOMParser.fromSchema(@schema).parse(content)
+      options.doc = DOMParser.fromSchema(@schema).parse(content)
     else
       options.schema = @schema
 
