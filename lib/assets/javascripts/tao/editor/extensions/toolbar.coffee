@@ -65,11 +65,7 @@ Tao.Editor.ToolbarExtension = ->
   _toolbarFloatingChanged: ->
     if @toolbarFloating
       @_toolbarPlaceholder.show()
-
-      toolbarLeft = if @_scrollContainer?.length > 0
-        @_toolbarPlaceholder.position().left
-      else
-        @_toolbarPlaceholder.offset().left
+      toolbarLeft = @_toolbarPlaceholder.get(0).getBoundingClientRect().left
 
       @toolbar.jq.css
         width: @_toolbarWidth

@@ -43,7 +43,7 @@ module TaoEditor
       def default_options
         {
           class: 'tao-editor-toolbar',
-          items: ['heading', 'bold', 'italic', 'underline', 'alignment', '|', 'ul', 'ol', 'table']
+          items: ['heading', 'bold', 'italic', 'underline', 'alignment', '|', 'ul', 'ol', 'table', 'hr']
         }
       end
 

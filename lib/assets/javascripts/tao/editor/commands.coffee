@@ -1,4 +1,6 @@
-{ NodeSelection } = ProseMirrorState
+{ NodeSelection, TextSelection } = ProseMirrorState
+{ insertPoint } = ProseMirrorTransform
+{ Fragment } = ProseMirrorModel
 
 Tao.Editor.Commands = _.extend {}, ProseMirrorCommands, {
 
@@ -30,4 +32,26 @@ Tao.Editor.Commands = _.extend {}, ProseMirrorCommands, {
         dispatch tr
 
       return true
+
+  insertHr: (state, dispatch) ->
+    hrType = state.schema.nodes.horizontal_rule
+    { $cursor } = state.selection
+    return false unless $cursor
+    insertPos = insertPoint(state.doc, $cursor.pos, hrType)
+    return false unless _.isNumber insertPos
+
+    if dispatch
+      nodes = []
+      nodes.push hrType.createAndFill()
+      $insertPos = state.doc.resolve insertPos
+      unless $insertPos.nodeAfter
+        nodes.push state.schema.nodes.paragraph.createAndFill()
+
+      tr = state.tr.insert insertPos, Fragment.from(nodes)
+      tr = tr.setSelection TextSelection.create(tr.doc, insertPos + 2)
+        .scrollIntoView()
+      dispatch tr
+
+    true
+
 }

@@ -15,6 +15,7 @@ module TaoEditor
             underline: { type: :mark, icon: :underline, mark_name: :u },
             ul: { type: :list, icon: :unorder_list, list_name: :bullet_list },
             ol: { type: :list, icon: :order_list, list_name: :ordered_list },
+            hr: { type: :command, command_name: :insertHr, icon: :hr },
             alignment: { type: :menu, icon: :align_left, items: [
               { type: :align, alignment: :left, name: :align_left, icon: :align_left },
               { type: :align, alignment: :center, name: :align_center, icon: :align_center },
