@@ -1,7 +1,7 @@
 module TaoEditor
   module Components
-    module ToolbarItems
-      class MarkItemComponent < Base
+    module Toolbar
+      class MarkItemComponent < BaseItemComponent
 
         def self.component_name
           :editor_toolbar_mark_item

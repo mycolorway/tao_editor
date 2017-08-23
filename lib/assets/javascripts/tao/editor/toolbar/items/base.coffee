@@ -7,7 +7,10 @@ class Tao.Editor.Toolbar.BaseItem extends TaoComponent
   @attribute 'icon'
 
   _connected: ->
-    @on 'click', '> .item-link', (e) => @_onClick()
+    @on 'click', '> .item-link', (e) =>
+      return if @disabled
+      @_onClick()
+      null
 
   _disconnected: ->
     @off()

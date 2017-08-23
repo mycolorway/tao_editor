@@ -1,7 +1,7 @@
 module TaoEditor
   module Components
-    module ToolbarItems
-      class MenuItemComponent < Base
+    module Toolbar
+      class MenuItemComponent < BaseItemComponent
 
         attr_reader :items
 

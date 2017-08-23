@@ -30,8 +30,14 @@ module TaoEditor
       def render_item item_name
         item_options = get_item_options item_name
         return unless item_options.present?
-        type = item_options.delete(:type).to_s
-        view.send("tao_editor_toolbar_#{type.dasherize}_item", item_options)
+
+        type = item_options.delete(:type)
+        component = if type
+          "tao_editor_toolbar_#{type.to_s.dasherize}_item"
+        else
+          item_options.delete(:component)
+        end
+        view.send(component, item_options)
       end
 
       def render_separator
@@ -51,7 +57,7 @@ module TaoEditor
         item_options = items_config[item_name]
         return unless item_options.present?
         {
-          title: t("items.#{item_name}"),
+          title: view.t("tao_editor.components.toolbar.items.#{item_name}"),
           tooltip: true,
           class: "#{item_name.to_s.dasherize}-item"
         }.merge(item_options)

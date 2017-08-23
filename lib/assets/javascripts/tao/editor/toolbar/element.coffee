@@ -10,7 +10,7 @@ class Tao.Editor.Toolbar.Element extends TaoComponent
 
   setEditorView: (editorView) ->
     @editorView = editorView
-    @items.forEach (item) =>
+    @items.forEach (item) ->
       Tao.helpers.componentReady item, ->
         item.setEditorView editorView
 

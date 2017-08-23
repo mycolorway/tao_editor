@@ -1,17 +1,17 @@
 module TaoEditor
   module Components
-    module ToolbarItems
-      class CommandItemComponent < Base
+    module Toolbar
+      class ListItemComponent < BaseItemComponent
 
         def self.component_name
-          :editor_toolbar_command_item
+          :editor_toolbar_list_item
         end
 
         private
 
         def default_options
           merge_options super, {
-            class: 'tao-editor-toolbar-command-item'
+            class: 'tao-editor-toolbar-list-item'
           }
         end
       end

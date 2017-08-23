@@ -1,7 +1,7 @@
 module TaoEditor
   module Components
-    module ToolbarItems
-      class BlockItemComponent < Base
+    module Toolbar
+      class BlockItemComponent < BaseItemComponent
 
         def initialize view, options = {}
           super

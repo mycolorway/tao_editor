@@ -1,7 +1,7 @@
 module TaoEditor
   module Components
-    module ToolbarItems
-      class Base < TaoOnRails::Components::Base
+    module Toolbar
+      class BaseItemComponent < TaoOnRails::Components::Base
 
         attr_reader :icon, :label, :tooltip
 
@@ -20,9 +20,13 @@ module TaoEditor
         end
 
         def render &block
-          view.content_tag tag_name, html_options do
-            view.concat render_item_link
-            view.concat(render_tooltip) if tooltip
+          if template = find_template
+            render_template template, &block
+          else
+            view.content_tag tag_name, html_options do
+              view.concat render_item_link
+              view.concat(render_tooltip) if tooltip
+            end
           end
         end
 
