@@ -1,9 +1,17 @@
+dist: trusty
 sudo: false
 language: ruby
-cache: bundler
+cache:
+  bundler: true
+  yarn: true
+addons:
+  chrome: stable
 rvm:
   - 2.4.1
-
+node_js:
+  - 'node'
+before_install:
+  - yarn
 script:
-  - rake test
-  - bundle exec blade ci
+  - bundle exec rake test
+  - yarn run ci

@@ -21,7 +21,4 @@ Gem::Specification.new do |spec|
   spec.add_dependency "tao_on_rails", "~> 0.10.0"
   spec.add_dependency "tao_ui", "~> 0.3.0"
   spec.add_dependency "tao_form", "~> 0.2.0"
-
-  spec.add_development_dependency "blade", "~> 0.7.0"
-  spec.add_development_dependency "blade-sauce_labs_plugin", "~> 0.7.0"
 end

@@ -1,0 +1,68 @@
+.tao-editor-toolbar-menu-item {
+
+  & > .item-link {
+    box-shadow: initial;
+
+    &.tao-popover-active {
+      fill: $grey-color !important;
+      background: none !important;
+      cursor: default !important;
+      box-shadow: 0 0 4px rgba(0,0,0,0.2);
+      position: relative;
+    }
+  }
+
+  .menu-popover .tao-popover-content {
+    border: none;
+    box-shadow: 0 0 4px rgba(0,0,0,0.2);
+    padding: 0;
+
+    &:before {
+      content: '';
+      display: block;
+      width: $editor-toolbar-item-width;
+      height: 0.25rem;
+      background: $white-color;
+      position: absolute;
+      top: -3px;
+      left: 0;
+    }
+
+    .tao-editor-toolbar-item {
+      display: block;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .item-link {
+        display: block;
+        white-space: nowrap;
+        font-size: 0.875rem;
+        padding: 0.4rem 1rem;
+        color: $lighter-grey-color;
+
+        &:hover {
+          color: $light-grey-color;
+          background: $grey-bg-color;
+        }
+      }
+
+      &[disabled] > .item-link {
+        color: $lightest-grey-color;
+        background: none;
+        cursor: not-allowed;
+      }
+
+      &[active] > .item-link {
+        color: $black-color;
+      }
+    }
+
+    .item-separator {
+      margin-top: 0.25rem;
+      padding-bottom: 0.25rem;
+      border-top: 1px solid $light-border-color;
+    }
+  }
+}

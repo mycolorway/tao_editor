@@ -2,7 +2,7 @@ module TaoEditor
   module Components
     class ToolbarComponent < TaoOnRails::Components::Base
 
-      include TaoEditor::Components::ToolbarItemsConfig
+      include TaoEditor::ToolbarItemsConfig
 
       attr_reader :items
 
