@@ -1,7 +1,7 @@
-@import '~prosemirror-gapcursor/style/gapcursor';
 @import './globals';
 @import './toolbar';
 @import './body';
+@import './gapcursor';
 
 .tao-editor {
   display: block;
