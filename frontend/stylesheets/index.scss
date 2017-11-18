@@ -1,0 +1,33 @@
+@import './globals';
+@import './toolbar';
+@import './body';
+@import './gapcursor';
+
+.tao-editor {
+  display: block;
+  min-height: $editor-toolbar-item-height + $editor-body-min-height;
+
+  &[toolbar-floating] > .tao-editor-toolbar {
+    width: 100%;
+    position: fixed;
+    z-index: $z-index-float;
+  }
+
+  &[scroll-container-selector][toolbar-floating] > .tao-editor-toolbar {
+    position: absolute;
+  }
+
+  & > .toolbar-placeholder {
+    display: none;
+  }
+
+  & > .tao-editor-body {
+    outline: none;
+    min-height: $editor-body-min-height;
+    padding: 0.75rem 1rem;
+  }
+}
+
+.tao-form form .form-input.editor .input-content {
+  flex: 1 1 auto;
+}
