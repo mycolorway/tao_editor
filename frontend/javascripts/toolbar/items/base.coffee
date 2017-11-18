@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { Component } from '@mycolorway/tao'
-import { createIcon } from '@mycolorway/tao_ui/frontend/javascripts/icons/create'
+import createIcon from '@mycolorway/tao_ui/frontend/javascripts/icons/create'
 
 class BaseItem extends Component
 

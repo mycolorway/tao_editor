@@ -1,10 +1,9 @@
 import _ from 'lodash'
 import { Schema } from 'prosemirror-model'
 import helpers from '../helpers'
-import Commands from '../commands'
+import { addCommands } from '../commands'
 
-_.extend Commands,
-
+addCommands
   setAlignment: (align) ->
     (state, dispatch) ->
       {$from, $to} = state.selection
@@ -19,7 +18,7 @@ _.extend Commands,
         textblocks.forEach (textblock) ->
           [node, pos] = textblock
           attrs = _.extend {}, node.attrs, align: align
-          tr = tr.setNodeType pos, node.type, attrs
+          tr = tr.setNodeMarkup pos, node.type, attrs
         dispatch tr
 
       true

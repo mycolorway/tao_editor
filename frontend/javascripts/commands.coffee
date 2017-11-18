@@ -2,38 +2,43 @@ import _ from 'lodash'
 import { NodeSelection, TextSelection } from 'prosemirror-state'
 import { insertPoint } from 'prosemirror-transform'
 import { Fragment } from 'prosemirror-model'
-import ProseMirrorCommands from 'prosemirror-commands'
+import * as ProseMirrorCommands from 'prosemirror-commands'
 
-export default _.extend {}, ProseMirrorCommands, {
+export addCommands = (cmds) ->
+  _.extend(commands, cmds)
 
-  setBlockType: (nodeType, attrs) ->
-    (state, dispatch) ->
-      {$from, $to} = state.selection
-      if state.selection instanceof NodeSelection
-        depth = $from.depth
-        target = state.selection.node
-      else
-        return false if !$from.depth || $to.pos > $from.end()
-        depth = $from.depth - 1
-        target = $from.parent
+export default commands = _.extend {}, ProseMirrorCommands, {
 
-      return false if !target.isTextblock || target.hasMarkup(nodeType, attrs)
-      index = $from.index(depth)
-      return false if !$from.node(depth).canReplaceWith(index, index + 1, nodeType)
+  addCommands: addCommands
 
-      if dispatch
-        attrs = if target.type == nodeType
-          _.extend {}, target.attrs, attrs
-        else if target.isTextblock && nodeType.isTextblock
-          _.extend {align: target.attrs.align}, attrs
-        where = $from.before(depth + 1)
-        tr = state.tr
-          .clearNonMatching(where, nodeType.contentExpr.start(attrs))
-          .setNodeType(where, nodeType, attrs)
-          .scrollIntoView()
-        dispatch tr
-
-      return true
+  # setBlockType: (nodeType, attrs) ->
+  #   (state, dispatch) ->
+  #     {$from, $to} = state.selection
+  #     if state.selection instanceof NodeSelection
+  #       depth = $from.depth
+  #       target = state.selection.node
+  #     else
+  #       return false if !$from.depth || $to.pos > $from.end()
+  #       depth = $from.depth - 1
+  #       target = $from.parent
+  #
+  #     return false if !target.isTextblock || target.hasMarkup(nodeType, attrs)
+  #     index = $from.index(depth)
+  #     return false if !$from.node(depth).canReplaceWith(index, index + 1, nodeType)
+  #
+  #     if dispatch
+  #       attrs = if target.type == nodeType
+  #         _.extend {}, target.attrs, attrs
+  #       else if target.isTextblock && nodeType.isTextblock
+  #         _.extend {align: target.attrs.align}, attrs
+  #       where = $from.before(depth + 1)
+  #       tr = state.tr
+  #         .clearNonMatching(where, nodeType.contentExpr.start(attrs))
+  #         .setNodeType(where, nodeType, attrs)
+  #         .scrollIntoView()
+  #       dispatch tr
+  #
+  #     return true
 
   insertHr: (state, dispatch) ->
     hrType = state.schema.nodes.horizontal_rule

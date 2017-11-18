@@ -7,7 +7,7 @@ import {
 import { insertPoint } from 'prosemirror-transform'
 import { TextSelection } from 'prosemirror-state'
 import helpers from '../helpers'
-import Commands from '../commands'
+import { addCommands } from '../commands'
 
 createTableNode = (schema, rowCount, colCount) ->
   cellType = schema.nodes.table_cell
@@ -24,7 +24,7 @@ createTableNode = (schema, rowCount, colCount) ->
   tableNode = tableType.create null, Fragment.from(rows)
 
 
-_.extend Commands,
+addCommands
 
   addColumnBefore: addColumnBefore
 

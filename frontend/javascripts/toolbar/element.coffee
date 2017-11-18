@@ -1,7 +1,7 @@
 import { Component } from '@mycolorway/tao'
-import helpers from '../helpers'
+import helpers from '@mycolorway/tao/frontend/javascripts/helpers'
 
-class ToolbarElement extends TaoComponent
+class ToolbarElement extends Component
 
   @tag 'tao-editor-toolbar'
 

@@ -2,9 +2,9 @@ import _ from 'lodash'
 import { joinPoint } from 'prosemirror-transform'
 import { liftListItem, wrapInList } from 'prosemirror-schema-list'
 import { TextSelection } from 'prosemirror-state'
-import Commands from '../../commands'
+import { addCommands } from '../../commands'
 
-_.extend Commands,
+addCommands
 
   wrapInList: (listType) ->
     (state, dispatch) ->
@@ -15,7 +15,7 @@ _.extend Commands,
       if blockRange
         if listType.name != blockRange.parent.type.name
           $listStart = state.doc.resolve(blockRange.start)
-          tr = state.tr.setNodeType($listStart.before(), listType)
+          tr = state.tr.setNodeMarkup($listStart.before(), listType)
             .scrollIntoView()
           dispatch? tr
           true

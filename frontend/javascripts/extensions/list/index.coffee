@@ -2,8 +2,10 @@ import './commands'
 import { Schema } from 'prosemirror-model'
 import { addListNodes, splitListItem, sinkListItem, liftListItem } from 'prosemirror-schema-list'
 import { deleteSelection, joinBackward, joinForward, selectNodeBackward } from 'prosemirror-commands'
-import { joinBackwardInList, joinForwardInList, liftEmptyListItem } from '../../commands'
+import Commands from '../../commands'
 import helpers from '../../helpers'
+
+{ joinBackwardInList, joinForwardInList, liftEmptyListItem } = Commands
 
 export default ->
 
