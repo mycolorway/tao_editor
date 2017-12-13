@@ -25,13 +25,14 @@ export default ->
       @toolbar.setEditorView editorView
 
     if @toolbarFloatable
-      @_scrollContainer = @jq.closest(@scrollContainerSelector) if @scrollContainerSelector
+      @_scrollContainer = @jq.closest(@scrollContainerSelector)
+      @_scrollContainer = null if @_scrollContainer.length <= 0
       @_toolbarHeight = $(@toolbar).outerHeight()
       @_toolbarWidth = $(@toolbar).outerWidth()
       @_generatePlaceholder()
       @_updateToolbarFloating editorView
 
-      $(window).on "scroll.tao-editor-toolbar-#{@taoId}", _.throttle (e) =>
+      $(@_scrollContainer || window).on "scroll.tao-editor-toolbar-#{@taoId}", _.throttle (e) =>
         @_updateToolbarFloating()
       , 50
 
@@ -49,11 +50,11 @@ export default ->
     @toolbar.reset()
 
     if @toolbarFloatable
+      $(@_scrollContainer || window).off(".tao-editor-toolbar-#{@taoId}")
       @_scrollContainer = null
       @_toolbarHeight = null
       @_toolbarWidth = null
       @_toolbarPlaceholder.remove()
-      $(window).off(".tao-editor-toolbar-#{@taoId}")
 
   _updateToolbarFloating: (editorView = @view) ->
     editorBody = $ editorView.dom
