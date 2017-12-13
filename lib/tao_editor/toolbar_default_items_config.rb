@@ -1,14 +1,14 @@
 module TaoEditor
-  module ToolbarItemsConfig
+  module ToolbarDefaultItemsConfig
     extend ActiveSupport::Concern
 
     included do
-      delegate :items_config, to: :class
+      delegate :default_items_config, to: :class
     end
 
     class_methods do
-      def items_config
-        @items_config ||= {
+      def default_items_config
+        @default_items_config ||= {
           bold: { type: :mark, icon: :bold, mark_name: :strong },
           italic: { type: :mark, icon: :italic, mark_name: :em },
           underline: { type: :mark, icon: :underline, mark_name: :u },
@@ -37,10 +37,6 @@ module TaoEditor
             { type: :command, command_name: :deleteTable, name: :delete_table}
           ]}
         }
-      end
-
-      def add_item_config config
-        items_config.merge! config
       end
     end
 
