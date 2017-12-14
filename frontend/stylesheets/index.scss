@@ -13,10 +13,6 @@
     z-index: $z-index-float;
   }
 
-  &[scroll-container-selector][toolbar-floating] > .tao-editor-toolbar {
-    position: absolute;
-  }
-
   & > .toolbar-placeholder {
     display: none;
   }

@@ -2,13 +2,15 @@ module TaoEditor
   module Components
     class ToolbarComponent < TaoOnRails::Components::Base
 
-      include TaoEditor::ToolbarItemsConfig
+      include TaoEditor::ToolbarDefaultItemsConfig
 
-      attr_reader :items
+      attr_reader :items, :items_config
 
       def initialize view, options = {}
         super
         @items = @options.delete(:items)
+        @items_config = default_items_config.dup
+        @items_config.deep_merge! @options.delete(:items_config) || {}
       end
 
       def self.component_name
