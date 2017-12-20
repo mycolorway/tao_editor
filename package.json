@@ -37,8 +37,8 @@
     "prosemirror-gapcursor": "^1.0.0"
   },
   "devDependencies": {
-    "@mycolorway/tao": "mycolorway/tao_on_rails#v1.0.0",
-    "@mycolorway/tao_ui": "mycolorway/tao_ui#v1.0.0",
+    "@mycolorway/tao": "mycolorway/tao_on_rails",
+    "@mycolorway/tao_ui": "mycolorway/tao_ui",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-runtime": "^6.23.0",

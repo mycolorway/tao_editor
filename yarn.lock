@@ -2,15 +2,15 @@
 # yarn lockfile v1
 
 
-"@mycolorway/tao@mycolorway/tao_on_rails#v1.0.0":
+"@mycolorway/tao@mycolorway/tao_on_rails":
   version "1.0.0-alpha.1"
-  resolved "https://codeload.github.com/mycolorway/tao_on_rails/tar.gz/4be3d19fe801e09a1fa2d16b83709934ac2de589"
+  resolved "https://codeload.github.com/mycolorway/tao_on_rails/tar.gz/d07b70c2e35f2871119b5f836c1d70cfe608e8e9"
   dependencies:
     "@webcomponents/custom-elements" "^1.0.4"
 
-"@mycolorway/tao_ui@mycolorway/tao_ui#v1.0.0":
+"@mycolorway/tao_ui@mycolorway/tao_ui":
   version "1.0.0-alpha.1"
-  resolved "https://codeload.github.com/mycolorway/tao_ui/tar.gz/82c92b834cc4495be1b245e6acb5a1e5996d4c12"
+  resolved "https://codeload.github.com/mycolorway/tao_ui/tar.gz/093c6059aeb05968892e1557bdb425ac4c3c3cf7"
   dependencies:
     normalize.css "^7.0.0"
 
