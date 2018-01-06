@@ -1,6 +1,6 @@
 {
   "name": "@mycolorway/tao_editor",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-beta.1",
   "description": "Rich text editor based on Tao",
   "main": "frontend/javascripts/index.coffee",
   "files": [
@@ -27,18 +27,18 @@
   "homepage": "https://github.com/mycolorway/tao_form#readme",
   "dependencies": {
     "prosemirror-commands": "^1.0.1",
+    "prosemirror-gapcursor": "^1.0.0",
     "prosemirror-history": "^1.0.0",
     "prosemirror-keymap": "^1.0.0",
     "prosemirror-schema-basic": "^1.0.0",
     "prosemirror-schema-list": "^1.0.0",
     "prosemirror-state": "^1.0.0",
     "prosemirror-tables": "^0.4.1",
-    "prosemirror-view": "^1.0.0",
-    "prosemirror-gapcursor": "^1.0.0"
+    "prosemirror-view": "^1.0.0"
   },
   "devDependencies": {
-    "@mycolorway/tao": "mycolorway/tao_on_rails",
-    "@mycolorway/tao_ui": "mycolorway/tao_ui",
+    "@mycolorway/tao": "^1.0.0-beta.1",
+    "@mycolorway/tao_ui": "^1.0.0-beta.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-runtime": "^6.23.0",
@@ -60,8 +60,8 @@
     "webpack": "^3.8.1"
   },
   "peerDependencies": {
-    "@mycolorway/tao": "mycolorway/tao_on_rails",
-    "@mycolorway/tao_ui": "mycolorway/tao_ui",
-    "@mycolorway/tao_form": "mycolorway/tao_form"
+    "@mycolorway/tao": "^1.0.0-beta.1",
+    "@mycolorway/tao_form": "^1.0.0-beta.1",
+    "@mycolorway/tao_ui": "^1.0.0-beta.1"
   }
 }
